@@ -1,0 +1,1 @@
+{ "executeIfDead": false, "json": [ { "functions": ["RunConsoleCommand"], "arguments": [["say", "!rtd"]], "delay": 121 } ] }
