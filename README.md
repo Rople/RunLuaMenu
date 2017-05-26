@@ -8,21 +8,21 @@ Lua:
 3. Create a folder (not in Garry's Mod directory, it can be detected !)
 4. Copy the injector and the folders of the release in the created folder
 5. Go in the lua folder and open lightimer.lua and edit these two lines with your lightimer directory and config file name, then save:
-lightimer.configFolder = ''
-lightimer.configFile = ''
-example:
-lightimer.configFolder = 'D:/injector/lua/lightimer'
-lightimer.configFile = 'config.json'
+   lightimer.configFolder = ''
+   lightimer.configFile = ''
+   example:
+   lightimer.configFolder = 'D:/injector/lua/lightimer'
+   lightimer.configFile = 'config.json'
 6. Launch Garry's Mod
 7. Launch the injector
 8. Select the process of Garry's Mod
 9. Add RunLuaMenu.dll in the injector
 10. Inject
 11. If you are in the main menu, the RunLuaMenu panel should appear
-Put the path of your lua file in the text box and then click on the button to run your lua file on the menu state
+    Put the path of your lua file in the text box and then click on the button to run your lua file on the menu state
 12. Run your lua file
-example if I want to run lightimer.lua, I put:
-D:/injector/lua/lightimer.lua
+    example if I want to run lightimer.lua, I put:
+    D:/injector/lua/lightimer.lua
 13. If you have run lightimer.lua and you have activated the texthat config, join a server with the pointshop addon and equip your texthat
 14. If you have done everything correctly, your texthat should change depending on your texthat config. If not, then you are a retard
 # Notes
