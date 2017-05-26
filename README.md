@@ -1,6 +1,6 @@
 # RunLuaMenu
 Run lua on menu state on Garry's Mod
-Lua:
+<br/>Lua:
 - lightimer: Run command or send net messages at specific interval. The texthat of pointshop was not really customizable, so I did it :)
 # Installation
 1. Download an injector
