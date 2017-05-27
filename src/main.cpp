@@ -816,7 +816,7 @@ int DllInit()
 		CreateInterfaceFn LuaShared_createinter = (CreateInterfaceFn)GetProcAddress(LuaShared_modhandle, "CreateInterface");
 		if (LuaShared_createinter != NULL)
 		{
-			LuaShared = (ILuaShared*)LuaShared_createinter("LUASHARED003", NULL);
+			LuaShared = (ILuaShared*)LuaShared_createinter(LUASHARED_INTERFACE_VERSION, NULL);
 		}
 	}
 	if (LuaShared == NULL)

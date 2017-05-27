@@ -307,8 +307,7 @@ function lightimer.executeFunctions(functions, arguments)
 			local cmd = args[1]
 			local cmdArgs = table.Copy( args)
 			table.remove( cmdArgs, 1 )
-			local str = string.Implode( " ", cmdArgs)
-			RunConsoleCommand( cmd, str)		
+			RunConsoleCommand( cmd, unpack(args))		
 		elseif v == 'netSendToServer' then
 			netSendToServer( unpack(args))
 		elseif v == 'netStart' then

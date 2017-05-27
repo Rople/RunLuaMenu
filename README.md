@@ -30,4 +30,5 @@ Run lua on menu state on Garry's Mod
 2. The RunLuaMenu panel appear only when you are on the main menu. It doesn't appear in game to not be detected by screenshot
 3. You can hide the panel in the main menu by pressing at the same time the close bracket key: ')' and the equal key: '='. For me they are between the zero key and the backspace key
 4. You can eject the dll by pressing at the same time the equal key: '=' and the backspace key. Note that this will also uninitialize the lightimer.lua script because they have the same keys to destroy. Then you will have a clean Garry's Mod. And you can delete the folder if you need.
-5. It hard to detect it, but it can be detected. Use at your own risk
+5. In your texthat config, you can use escape characters like '\n', it will make a new line so you can have a texthat with several lines. You can also use source engine localization feature, '#VAC_ConnectionRefusedDetail' will be replaced by a text with a length of 189 characters
+6. It's hard to detect it, but it can be detected. Use at your own risk
