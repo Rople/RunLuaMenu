@@ -15,7 +15,7 @@ lightimer.configsTimerExecuteLastTime = {}
 lightimer.configRefreshDelay = 1
 lightimer.configRefreshExecuteLastTime = nil
 
-lightimer.configFolder = ''
+lightimer.folder = ''
 lightimer.configFile = ''
 
 lightimer.destroyKeys = { KEY_EQUAL, KEY_BACKSPACE }
@@ -28,19 +28,19 @@ lightimer.startDelay = 1
 lightimer.startExecuteLastTime = nil
 lightimer.started = false
 
-if lightimer.configFolder == '' or lightimer.configFile == '' then
+if lightimer.folder == '' or lightimer.configFile == '' then
 	return
 end
 
 function lightimer.getConfig()
-	if not gaceioIsDir( lightimer.configFolder) then
-		gaceioCreateDir( lightimer.configFolder)
+	if not gaceioIsDir( lightimer.folder) then
+		gaceioCreateDir( lightimer.folder)
 	end
-	if not gaceioExists( lightimer.configFolder .. '/' .. lightimer.configFile) then
-		gaceioWrite( lightimer.configFolder .. '/' .. lightimer.configFile, '{ }')
+	if not gaceioExists( lightimer.folder .. '/' .. lightimer.configFile) then
+		gaceioWrite( lightimer.folder .. '/' .. lightimer.configFile, '{ }')
 	end
 	local newConfig = {}
-	local content = gaceioRead( lightimer.configFolder .. '/' .. lightimer.configFile)
+	local content = gaceioRead( lightimer.folder .. '/' .. lightimer.configFile)
 	local t = util.JSONToTable(content)
 	if t ~= nil then
 		local err = false
@@ -60,10 +60,10 @@ end
 function lightimer.getConfigsTimer()
 	local newConfigsTimer = {}
 	local newConfigsTimerJSON = {}
-	local files, _ = gaceioList( lightimer.configFolder)
+	local files, _ = gaceioList( lightimer.folder)
 	for _, name in pairs(files) do
 		if name ~= lightimer.configFile then
-			local content = gaceioRead( lightimer.configFolder .. '/' .. name)
+			local content = gaceioRead( lightimer.folder .. '/' .. name)
 			local t = util.JSONToTable(content)
 			if t ~= nil then
 				local count = table.Count(t)
@@ -230,69 +230,67 @@ function lightimer.setConfigsTimer(newConfigsTimer, newConfigsTimerJSON)
 end
 
 function lightimer.think()
-	if  gaceioList ~= nil and gaceioRead ~= nil and gaceioWrite ~= nil and gaceioDelete ~= nil and gaceioIsDir ~= nil and gaceioExists ~= nil and gaceioCreateDir ~= nil and gaceioTime ~= nil and gaceioSize ~= nil and gaceioCRC ~= nil and netSendToServer ~= nil and netStart ~= nil and netWriteAngle ~= nil and netWriteBit ~= nil and netWriteBool ~= nil and netWriteColor ~= nil and netWriteData ~= nil and netWriteDouble ~= nil and netWriteFloat ~= nil and netWriteInt ~= nil and netWriteNormal ~= nil and netWriteString ~= nil and netWriteTable ~= nil and netWriteUInt ~= nil and netWriteVector ~= nil and IsClientLuaValid ~= nil and LocalPlayerIsValid ~= nil and LocalPlayerAlive ~= nil then
-		if lightimer.configRefreshExecuteLastTime == nil or CurTime() - lightimer.configRefreshExecuteLastTime >= lightimer.configRefreshDelay then
-			local config = lightimer.getConfig()
-			local configsTimer, configsTimerJSON = lightimer.getConfigsTimer()
-			lightimer.setConfig(config)
-			lightimer.setConfigsTimer(configsTimer, configsTimerJSON)
-			lightimer.configRefreshExecuteLastTime = CurTime()
-		end
-		if not IsClientLuaValid() then
-			if lightimer.clientLuaValid == true then
-				lightimer.clientLuaValid = false
-				lightimer.startExecuteLastTime = nil
-				lightimer.started = false
-				if lightimer.resetWhenClientLuaNotValid == true then
-					lightimer.configsTimerExecuteIndex = {}
-					lightimer.configsTimerExecuteOnSpawn = {}
-					lightimer.configsTimerExecuteLastTime = {}
-				end
+	if lightimer.configRefreshExecuteLastTime == nil or CurTime() - lightimer.configRefreshExecuteLastTime >= lightimer.configRefreshDelay then
+		local config = lightimer.getConfig()
+		local configsTimer, configsTimerJSON = lightimer.getConfigsTimer()
+		lightimer.setConfig(config)
+		lightimer.setConfigsTimer(configsTimer, configsTimerJSON)
+		lightimer.configRefreshExecuteLastTime = CurTime()
+	end
+	if not IsClientLuaValid() then
+		if lightimer.clientLuaValid == true then
+			lightimer.clientLuaValid = false
+			lightimer.startExecuteLastTime = nil
+			lightimer.started = false
+			if lightimer.resetWhenClientLuaNotValid == true then
+				lightimer.configsTimerExecuteIndex = {}
+				lightimer.configsTimerExecuteOnSpawn = {}
+				lightimer.configsTimerExecuteLastTime = {}
 			end
-			return
+		end
+		return
+	else
+		if lightimer.clientLuaValid == false then
+			lightimer.clientLuaValid = true
+		end
+	end
+	if not EntityIsValid(LocalPlayerEntIndex()) then
+		return
+	end
+	if lightimer.started == false then
+		if lightimer.startExecuteLastTime == nil then
+			lightimer.startExecuteLastTime = CurTime()
+		end
+		if CurTime() - lightimer.startExecuteLastTime >= lightimer.startDelay then
+			lightimer.started = true
+			lightimer.startExecuteLastTime = nil
 		else
-			if lightimer.clientLuaValid == false then
-				lightimer.clientLuaValid = true
-			end
-		end
-		if not LocalPlayerIsValid() then
 			return
 		end
-		if lightimer.started == false then
-			if lightimer.startExecuteLastTime == nil then
-				lightimer.startExecuteLastTime = CurTime()
-			end
-			if CurTime() - lightimer.startExecuteLastTime >= lightimer.startDelay then
-				lightimer.started = true
-				lightimer.startExecuteLastTime = nil
+	end
+	local isalive = PlayerAlive(LocalPlayerEntIndex())
+	for k, v in pairs( lightimer.config) do
+		local configTimer = lightimer.configsTimer[k]
+		if configTimer ~= nil then
+			lightimer.configsTimerExecuteIndex[k] = lightimer.configsTimerExecuteIndex[k] or 0
+			lightimer.configsTimerExecuteOnSpawn[k] = lightimer.configsTimerExecuteOnSpawn[k] or false
+			if lightimer.configsTimerExecuteOnSpawn[k] then
+				if isalive then
+					lightimer.executeFunctions(configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].functions, configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].arguments)
+					lightimer.configsTimerExecuteLastTime[k] = CurTime()
+					lightimer.configsTimerExecuteOnSpawn[k] = false
+				end
 			else
-				return
-			end
-		end
-		local isalive = LocalPlayerAlive()
-		for k, v in pairs( lightimer.config) do
-			local configTimer = lightimer.configsTimer[k]
-			if configTimer ~= nil then
-				lightimer.configsTimerExecuteIndex[k] = lightimer.configsTimerExecuteIndex[k] or 0
-				lightimer.configsTimerExecuteOnSpawn[k] = lightimer.configsTimerExecuteOnSpawn[k] or false
-				if lightimer.configsTimerExecuteOnSpawn[k] then
-					if isalive then
+				if lightimer.configsTimerExecuteLastTime[k] == nil or CurTime() - lightimer.configsTimerExecuteLastTime[k] >= configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].delay then
+					if #configTimer.json == lightimer.configsTimerExecuteIndex[k] then
+						lightimer.configsTimerExecuteIndex[k] = 0
+					end
+					lightimer.configsTimerExecuteIndex[k] = lightimer.configsTimerExecuteIndex[k] + 1
+					if configTimer.executeIfDead or isalive then
 						lightimer.executeFunctions(configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].functions, configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].arguments)
 						lightimer.configsTimerExecuteLastTime[k] = CurTime()
-						lightimer.configsTimerExecuteOnSpawn[k] = false
-					end
-				else
-					if lightimer.configsTimerExecuteLastTime[k] == nil or CurTime() - lightimer.configsTimerExecuteLastTime[k] >= configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].delay then
-						if #configTimer.json == lightimer.configsTimerExecuteIndex[k] then
-							lightimer.configsTimerExecuteIndex[k] = 0
-						end
-						lightimer.configsTimerExecuteIndex[k] = lightimer.configsTimerExecuteIndex[k] + 1
-						if configTimer.executeIfDead or isalive then
-							lightimer.executeFunctions(configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].functions, configTimer.json[ lightimer.configsTimerExecuteIndex[k] ].arguments)
-							lightimer.configsTimerExecuteLastTime[k] = CurTime()
-						else
-							lightimer.configsTimerExecuteOnSpawn[k] = true
-						end
+					else
+						lightimer.configsTimerExecuteOnSpawn[k] = true
 					end
 				end
 			end

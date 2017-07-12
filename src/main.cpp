@@ -195,6 +195,141 @@ int LuaFunc_CRC(lua_State* state)
 
 //gaceio end
 
+void entsGetByIndex(double entIndex)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "ents");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "GetByIndex");
+	ClientLua->Remove(-2);
+	ClientLua->PushNumber(entIndex);
+	ClientLua->Call(1, 1);
+}
+
+void getLocalPlayer()
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "LocalPlayer");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+}
+
+void getAngle(double pitch, double yaw, double roll)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "Angle");
+	ClientLua->Remove(-2);
+	ClientLua->PushNumber(pitch);
+	ClientLua->PushNumber(yaw);
+	ClientLua->PushNumber(roll);
+	ClientLua->Call(3, 1);
+}
+
+void getColor(double r, double g, double b, double a)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "Color");
+	ClientLua->Remove(-2);
+	ClientLua->PushNumber(r);
+	ClientLua->PushNumber(g);
+	ClientLua->PushNumber(b);
+	ClientLua->PushNumber(a);
+	ClientLua->Call(4, 1);
+}
+
+void getVectorMenu(double x, double y, double z)
+{
+	MenuLua->PushSpecial(SPECIAL_GLOB);
+	MenuLua->GetField(-1, "Vector");
+	MenuLua->Remove(-2);
+	MenuLua->PushNumber(x);
+	MenuLua->PushNumber(y);
+	MenuLua->PushNumber(z);
+	MenuLua->Call(3, 1);
+}
+
+void getVectorClient(double x, double y, double z)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "Vector");
+	ClientLua->Remove(-2);
+	ClientLua->PushNumber(x);
+	ClientLua->PushNumber(y);
+	ClientLua->PushNumber(z);
+	ClientLua->Call(3, 1);
+}
+
+std::string utilTableToJSONMenu(int iStackPos)
+{
+	MenuLua->PushSpecial(SPECIAL_GLOB);
+	MenuLua->GetField(-1, "util");
+	MenuLua->Remove(-2);
+	MenuLua->GetField(-1, "TableToJSON");
+	MenuLua->Remove(-2);
+	MenuLua->Push(iStackPos);
+	if (iStackPos < 0)
+	{
+		MenuLua->Remove(iStackPos - 1);
+	}
+	MenuLua->PushBool(false);
+	MenuLua->Call(2, 1);
+	unsigned int i;
+	const char* str = MenuLua->GetString(-1, &i);
+	std::string s = std::string(str, i);
+	MenuLua->Pop();
+	return s;
+}
+
+std::string utilTableToJSONClient(int iStackPos)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "util");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "TableToJSON");
+	ClientLua->Remove(-2);
+	ClientLua->Push(iStackPos);
+	if (iStackPos < 0)
+	{
+		ClientLua->Remove(iStackPos - 1);
+	}
+	ClientLua->PushBool(false);
+	ClientLua->Call(2, 1);
+	unsigned int i;
+	const char* str = ClientLua->GetString(-1, &i);
+	std::string s = std::string(str, i);
+	ClientLua->Pop();
+	return s;
+}
+
+void utilJSONToTableMenu(std::string json)
+{
+	MenuLua->PushSpecial(SPECIAL_GLOB);
+	MenuLua->GetField(-1, "util");
+	MenuLua->Remove(-2);
+	MenuLua->GetField(-1, "JSONToTable");
+	MenuLua->Remove(-2);
+	MenuLua->PushString(json.c_str(), json.length());
+	MenuLua->Call(1, 1);
+}
+
+void utilJSONToTableClient(std::string json)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "util");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "JSONToTable");
+	ClientLua->Remove(-2);
+	ClientLua->PushString(json.c_str(), json.length());
+	ClientLua->Call(1, 1);
+}
+
 int RunLuaMenu(lua_State* state)
 {
 	std::string filename = "RunString";
@@ -251,14 +386,155 @@ int IsClientLuaValid(lua_State* state)
 	return 1;
 }
 
-int LocalPlayerIsValid(lua_State* state)
+int entsFindByClass(lua_State* state)
 {
+	std::string classname;
+	if (MenuLua->IsType(1, Type::STRING))
+	{
+		unsigned int i;
+		const char* str = MenuLua->GetString(1, &i);
+		classname = std::string(str, i);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "ents");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "FindByClass");
+	ClientLua->Remove(-2);
+	ClientLua->PushString(classname.c_str(), classname.length());
+	ClientLua->Call(1, 1);
+
+	MenuLua->CreateTable();
+	unsigned int tableIndex = 1;
+
+	ClientLua->PushNil();
+	while (ClientLua->Next(-2))
+	{
+		ClientLua->PushSpecial(SPECIAL_GLOB);
+		ClientLua->GetField(-1, "debug");
+		ClientLua->Remove(-2);
+		ClientLua->GetField(-1, "getregistry");
+		ClientLua->Remove(-2);
+		ClientLua->Call(0, 1);
+		ClientLua->GetField(-1, "Entity");
+		ClientLua->Remove(-2);
+		ClientLua->GetField(-1, "EntIndex");
+		ClientLua->Remove(-2);
+		ClientLua->Push(-2);
+		ClientLua->Call(1, 1);
+		double entIndex = ClientLua->GetNumber(-1);
+		MenuLua->PushNumber(tableIndex);
+		MenuLua->PushNumber(entIndex);
+		MenuLua->SetTable(-3);
+		ClientLua->Pop();
+		ClientLua->Pop();
+		tableIndex++;
+	}
+	ClientLua->Pop();
+	return 1;
+}
+
+int EntityGetMaxHealth(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "GetMaxHealth");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	double maxHealth = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	MenuLua->PushNumber(maxHealth);
+	return 1;
+}
+
+int EntityGetPos(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "GetPos");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	double x = 0;
+	double y = 0;
+	double z = 0;
+	ClientLua->GetField(-1, "x");
+	x = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "y");
+	y = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "z");
+	z = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->Pop();
+	getVectorMenu(x, y, z);
+	return 1;
+}
+
+int EntityHealth(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "Health");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	double health = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	MenuLua->PushNumber(health);
+	return 1;
+}
+
+int EntityIsValid(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
 	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
 	ClientLua->PushSpecial(SPECIAL_GLOB);
 	ClientLua->GetField(-1, "IsValid");
-	ClientLua->GetField(-2, "LocalPlayer");
-	ClientLua->Remove(-3);
-	ClientLua->Call(0, 1);
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
 	ClientLua->Call(1, 1);
 	bool b = ClientLua->GetBool(-1);
 	ClientLua->Pop();
@@ -266,8 +542,140 @@ int LocalPlayerIsValid(lua_State* state)
 	return 1;
 }
 
-int LocalPlayerAlive(lua_State* state)
+int EntityLocalToWorld(lua_State* state)
 {
+	double d = 0;
+	double x = 0;
+	double y = 0;
+	double z = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	if (MenuLua->IsType(2, Type::VECTOR))
+	{
+		MenuLua->GetField(2, "x");
+		x = MenuLua->GetNumber(-1);
+		MenuLua->Pop();
+		MenuLua->GetField(2, "y");
+		y = MenuLua->GetNumber(-1);
+		MenuLua->Pop();
+		MenuLua->GetField(2, "z");
+		z = MenuLua->GetNumber(-1);
+		MenuLua->Pop();
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "LocalToWorld");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	getVectorClient(x, y, z);
+	ClientLua->Call(2, 1);
+	double x2 = 0;
+	double y2 = 0;
+	double z2 = 0;
+	ClientLua->GetField(-1, "x");
+	x2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "y");
+	y2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "z");
+	z2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->Pop();
+	getVectorMenu(x2, y2, z2);
+	return 1;
+}
+
+int EntityOBBMaxs(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "OBBMaxs");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	double x2 = 0;
+	double y2 = 0;
+	double z2 = 0;
+	ClientLua->GetField(-1, "x");
+	x2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "y");
+	y2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "z");
+	z2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->Pop();
+	getVectorMenu(x2, y2, z2);
+	return 1;
+}
+
+int EntityOBBMins(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "OBBMins");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	double x2 = 0;
+	double y2 = 0;
+	double z2 = 0;
+	ClientLua->GetField(-1, "x");
+	x2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "y");
+	y2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "z");
+	z2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->Pop();
+	getVectorMenu(x2, y2, z2);
+	return 1;
+}
+
+int PlayerAlive(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
 	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
 	ClientLua->PushSpecial(SPECIAL_GLOB);
 	ClientLua->GetField(-1, "debug");
@@ -279,14 +687,184 @@ int LocalPlayerAlive(lua_State* state)
 	ClientLua->Remove(-2);
 	ClientLua->GetField(-1, "Alive");
 	ClientLua->Remove(-2);
-	ClientLua->PushSpecial(SPECIAL_GLOB);
-	ClientLua->GetField(-1, "LocalPlayer");
-	ClientLua->Remove(-2);
-	ClientLua->Call(0, 1);
+	entsGetByIndex(d);
 	ClientLua->Call(1, 1);
 	bool b = ClientLua->GetBool(-1);
 	ClientLua->Pop();
 	MenuLua->PushBool(b);
+	return 1;
+}
+
+int PlayerGetObserverMode(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Player");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "GetObserverMode");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	double mode = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	MenuLua->PushNumber(mode);
+	return 1;
+}
+
+int PlayerGetObserverTarget(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Player");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "GetObserverTarget");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+
+	if (!ClientLua->IsType(-1, Type::ENTITY))
+	{
+		ClientLua->Pop();
+		MenuLua->PushNil();
+		return 1;
+	}
+
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "EntIndex");
+	ClientLua->Remove(-2);
+	ClientLua->Push(-2);
+	ClientLua->Remove(-3);
+	ClientLua->Call(1, 1);
+
+	double entIndex = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	MenuLua->PushNumber(entIndex);
+	return 1;
+}
+
+int PlayerNick(lua_State* state)
+{
+	double d = 0;
+	if (MenuLua->IsType(1, Type::NUMBER))
+	{
+		d = MenuLua->GetNumber(1);
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Player");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "Nick");
+	ClientLua->Remove(-2);
+	entsGetByIndex(d);
+	ClientLua->Call(1, 1);
+	unsigned int i;
+	const char* str = ClientLua->GetString(-1, &i);
+	std::string nick = std::string(str, i);
+	ClientLua->Pop();
+	MenuLua->PushString(nick.c_str(), nick.length());
+	return 1;
+}
+
+int LocalPlayerEntIndex(lua_State* state)
+{
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Entity");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "EntIndex");
+	ClientLua->Remove(-2);
+	getLocalPlayer();
+	ClientLua->Call(1, 1);
+	double entIndex = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	MenuLua->PushNumber(entIndex);
+	return 1;
+}
+
+int VectorToScreen(lua_State* state)
+{
+	double x = 0;
+	double y = 0;
+	double z = 0;
+	if (MenuLua->IsType(1, Type::VECTOR))
+	{
+		MenuLua->GetField(1, "x");
+		x = MenuLua->GetNumber(-1);
+		MenuLua->Pop();
+		MenuLua->GetField(1, "y");
+		y = MenuLua->GetNumber(-1);
+		MenuLua->Pop();
+		MenuLua->GetField(1, "z");
+		z = MenuLua->GetNumber(-1);
+		MenuLua->Pop();
+	}
+	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
+	ClientLua->PushSpecial(SPECIAL_GLOB);
+	ClientLua->GetField(-1, "debug");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "getregistry");
+	ClientLua->Remove(-2);
+	ClientLua->Call(0, 1);
+	ClientLua->GetField(-1, "Vector");
+	ClientLua->Remove(-2);
+	ClientLua->GetField(-1, "ToScreen");
+	ClientLua->Remove(-2);
+	getVectorClient(x, y, z);
+	ClientLua->Call(1, 1);
+	ClientLua->GetField(-1, "x");
+	double x2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "y");
+	double y2 = ClientLua->GetNumber(-1);
+	ClientLua->Pop();
+	ClientLua->GetField(-1, "visible");
+	bool visible = ClientLua->GetBool(-1);
+	ClientLua->Pop();
+	ClientLua->Pop();
+	MenuLua->CreateTable();
+	MenuLua->PushNumber(x2);
+	MenuLua->SetField(-2, "x");
+	MenuLua->PushNumber(y2);
+	MenuLua->SetField(-2, "y");
+	MenuLua->PushBool(visible);
+	MenuLua->SetField(-2, "visible");
 	return 1;
 }
 
@@ -329,18 +907,6 @@ int netSendToServer(lua_State* state)
 	ClientLua->Remove(-2);
 	ClientLua->Call(0, 0);
 	return 0;
-}
-
-void getAngle(double pitch, double yaw, double roll)
-{
-	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
-	ClientLua->PushSpecial(SPECIAL_GLOB);
-	ClientLua->GetField(-1, "Angle");
-	ClientLua->Remove(-2);
-	ClientLua->PushNumber(pitch);
-	ClientLua->PushNumber(yaw);
-	ClientLua->PushNumber(roll);
-	ClientLua->Call(3, 1);
 }
 
 int netWriteAngle(lua_State* state)
@@ -405,19 +971,6 @@ int netWriteBool(lua_State* state)
 	ClientLua->PushBool(b);
 	ClientLua->Call(1, 0);
 	return 0;
-}
-
-void getColor(double r, double g, double b, double a)
-{
-	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
-	ClientLua->PushSpecial(SPECIAL_GLOB);
-	ClientLua->GetField(-1, "Color");
-	ClientLua->Remove(-2);
-	ClientLua->PushNumber(r);
-	ClientLua->PushNumber(g);
-	ClientLua->PushNumber(b);
-	ClientLua->PushNumber(a);
-	ClientLua->Call(4, 1);
 }
 
 int netWriteColor(lua_State* state)
@@ -539,18 +1092,6 @@ int netWriteInt(lua_State* state)
 	return 0;
 }
 
-void getVector(double x, double y, double z)
-{
-	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
-	ClientLua->PushSpecial(SPECIAL_GLOB);
-	ClientLua->GetField(-1, "Vector");
-	ClientLua->Remove(-2);
-	ClientLua->PushNumber(x);
-	ClientLua->PushNumber(y);
-	ClientLua->PushNumber(z);
-	ClientLua->Call(3, 1);
-}
-
 int netWriteNormal(lua_State* state)
 {
 	double x = 0;
@@ -574,7 +1115,7 @@ int netWriteNormal(lua_State* state)
 	ClientLua->Remove(-2);
 	ClientLua->GetField(-1, "WriteNormal");
 	ClientLua->Remove(-2);
-	getVector(x, y, z);
+	getVectorClient(x, y, z);
 	ClientLua->Call(1, 0);
 	return 0;
 }
@@ -599,41 +1140,12 @@ int netWriteString(lua_State* state)
 	return 0;
 }
 
-std::string utilTableToJSON(int iStackPos)
-{
-	MenuLua->PushSpecial(SPECIAL_GLOB);
-	MenuLua->GetField(-1, "util");
-	MenuLua->Remove(-2);
-	MenuLua->GetField(-1, "TableToJSON");
-	MenuLua->Remove(-2);
-	MenuLua->Push(iStackPos);
-	MenuLua->PushBool(false);
-	MenuLua->Call(2, 1);
-	unsigned int i;
-	const char* str = MenuLua->GetString(-1, &i);
-	std::string s = std::string(str, i);
-	MenuLua->Pop();
-	return s;
-}
-
-void utilJSONToTable(std::string json)
-{
-	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
-	ClientLua->PushSpecial(SPECIAL_GLOB);
-	ClientLua->GetField(-1, "util");
-	ClientLua->Remove(-2);
-	ClientLua->GetField(-1, "JSONToTable");
-	ClientLua->Remove(-2);
-	ClientLua->PushString(json.c_str(), json.length());
-	ClientLua->Call(1, 1);
-}
-
 int netWriteTable(lua_State* state)
 {
 	std::string json;
 	if (MenuLua->IsType(1, Type::TABLE))
 	{
-		json = utilTableToJSON(1);
+		json = utilTableToJSONMenu(1);
 	}
 	ILuaInterface* ClientLua = LuaShared->GetLuaInterface(LuaInterfaceType::LUAINTERFACE_CLIENT);
 	ClientLua->PushSpecial(SPECIAL_GLOB);
@@ -641,7 +1153,7 @@ int netWriteTable(lua_State* state)
 	ClientLua->Remove(-2);
 	ClientLua->GetField(-1, "WriteTable");
 	ClientLua->Remove(-2);
-	utilJSONToTable(json);
+	utilJSONToTableClient(json);
 	ClientLua->Call(1, 0);
 	return 0;
 }
@@ -693,7 +1205,7 @@ int netWriteVector(lua_State* state)
 	ClientLua->Remove(-2);
 	ClientLua->GetField(-1, "WriteVector");
 	ClientLua->Remove(-2);
-	getVector(x, y, z);
+	getVectorClient(x, y, z);
 	ClientLua->Call(1, 0);
 	return 0;
 }
@@ -768,10 +1280,34 @@ int RunLuaMenuInit(lua_State* state)
 	MenuLua->SetField(-2, "RunLuaMenuDestroy");
 	MenuLua->PushCFunction(IsClientLuaValid);
 	MenuLua->SetField(-2, "IsClientLuaValid");
-	MenuLua->PushCFunction(LocalPlayerIsValid);
-	MenuLua->SetField(-2, "LocalPlayerIsValid");
-	MenuLua->PushCFunction(LocalPlayerAlive);
-	MenuLua->SetField(-2, "LocalPlayerAlive");
+	MenuLua->PushCFunction(entsFindByClass);
+	MenuLua->SetField(-2, "entsFindByClass");
+	MenuLua->PushCFunction(EntityGetMaxHealth);
+	MenuLua->SetField(-2, "EntityGetMaxHealth");
+	MenuLua->PushCFunction(EntityGetPos);
+	MenuLua->SetField(-2, "EntityGetPos");
+	MenuLua->PushCFunction(EntityHealth);
+	MenuLua->SetField(-2, "EntityHealth");
+	MenuLua->PushCFunction(EntityIsValid);
+	MenuLua->SetField(-2, "EntityIsValid");
+	MenuLua->PushCFunction(EntityLocalToWorld);
+	MenuLua->SetField(-2, "EntityLocalToWorld");
+	MenuLua->PushCFunction(EntityOBBMaxs);
+	MenuLua->SetField(-2, "EntityOBBMaxs");
+	MenuLua->PushCFunction(EntityOBBMins);
+	MenuLua->SetField(-2, "EntityOBBMins");
+	MenuLua->PushCFunction(PlayerAlive);
+	MenuLua->SetField(-2, "PlayerAlive");
+	MenuLua->PushCFunction(PlayerGetObserverMode);
+	MenuLua->SetField(-2, "PlayerGetObserverMode");
+	MenuLua->PushCFunction(PlayerGetObserverTarget);
+	MenuLua->SetField(-2, "PlayerGetObserverTarget");
+	MenuLua->PushCFunction(PlayerNick);
+	MenuLua->SetField(-2, "PlayerNick");
+	MenuLua->PushCFunction(LocalPlayerEntIndex);
+	MenuLua->SetField(-2, "LocalPlayerEntIndex");
+	MenuLua->PushCFunction(VectorToScreen);
+	MenuLua->SetField(-2, "VectorToScreen");
 	MenuLua->PushCFunction(netStart);
 	MenuLua->SetField(-2, "netStart");
 	MenuLua->PushCFunction(netSendToServer);
@@ -803,7 +1339,7 @@ int RunLuaMenuInit(lua_State* state)
 	MenuLua->PushCFunction(netWriteVector);
 	MenuLua->SetField(-2, "netWriteVector");
 	MenuLua->Pop();
-	MenuLua->RunString("RunString", "", "RunLuaMenuDestroyKeys = { KEY_EQUAL, KEY_BACKSPACE } RunLuaMenuToggleKeys = { KEY_EQUAL, KEY_LBRACKET } RunLuaMenuToggle = true RunLuaMenuToggleDelay = 0.5 RunLuaMenuToggleExecuteLastTime = nil function thinkRunLuaMenuDestroy() local destroy = true for k, v in ipairs(RunLuaMenuDestroyKeys) do if not input.IsKeyDown(v) then destroy = false break end end if destroy == true then if RunLuaMenuDestroy ~= nil then hook.Remove('Think', 'RunLuaMenuDestroy') hook.Remove('Think', 'RunLuaMenuHide') RunLuaMenuDestroyKeys = nil RunLuaMenuToggleKeys = nil RunLuaMenuToggle = nil RunLuaMenuToggleDelay = nil RunLuaMenuToggleExecuteLastTime = nil menuRunLuaMenuPosX = nil menuRunLuaMenuPosY = nil if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil menuRunLuaMenu:Remove() menuRunLuaMenu = nil end --[[ gaceio start --]] gaceioList = nil gaceioRead = nil gaceioWrite = nil gaceioDelete = nil gaceioIsDir = nil gaceioExists = nil gaceioCreateDir = nil gaceioTime = nil gaceioSize = nil gaceioCRC = nil --[[ gaceio end --]] RunLuaMenu = nil IsClientLuaValid = nil LocalPlayerIsValid = nil LocalPlayerAlive = nil netStart = nil netSendToServer = nil netWriteAngle = nil netWriteBit = nil netWriteBool = nil netWriteColor = nil netWriteData = nil netWriteDouble = nil netWriteFloat = nil netWriteInt = nil netWriteNormal = nil netWriteString = nil netWriteTable = nil netWriteUInt = nil netWriteVector = nil local RunLuaMenuDestroyLocal = RunLuaMenuDestroy RunLuaMenuDestroy = nil RunLuaMenuDestroyLocal() end end end function thinkRunLuaMenuHide() local toggle = true for k, v in ipairs(RunLuaMenuToggleKeys) do if not input.IsKeyDown(v) then toggle = false break end end if toggle == true then if RunLuaMenuToggleExecuteLastTime == nil or CurTime() - RunLuaMenuToggleExecuteLastTime >= RunLuaMenuToggleDelay then RunLuaMenuToggle = !RunLuaMenuToggle RunLuaMenuToggleExecuteLastTime = CurTime() end end if IsClientLuaValid ~= nil and IsClientLuaValid() then if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil local posX, posY = menuRunLuaMenu:GetPos() menuRunLuaMenuPosX = posX menuRunLuaMenuPosY = posY menuRunLuaMenu:Remove() menuRunLuaMenu = nil end else if GetLoadStatus() == nil then if RunLuaMenuToggle == true then if textRunLuaMenu == nil and buttonRunLuaMenu == nil and menuRunLuaMenu == nil then menuRunLuaMenu = vgui.Create('DFrame') menuRunLuaMenu:SetSize(ScrW() * 0.3, ScrH() * 0.22) if menuRunLuaMenuPosX ~= nil and menuRunLuaMenuPosY ~= nil then menuRunLuaMenu:SetPos(menuRunLuaMenuPosX, menuRunLuaMenuPosY) else menuRunLuaMenu:Center() end menuRunLuaMenu:SetDraggable(true) menuRunLuaMenu:ShowCloseButton(false) menuRunLuaMenu:SetTitle('RunLuaMenu Panel') menuRunLuaMenu:MakePopup() textRunLuaMenu = vgui.Create( 'DTextEntry', menuRunLuaMenu ) textRunLuaMenu:SetPos( ScrW() * 0, ScrH() * 0.02 ) textRunLuaMenu:SetSize( ScrW() * 0.3, ScrH() * 0.1 ) buttonRunLuaMenu = vgui.Create( 'DButton', menuRunLuaMenu ) buttonRunLuaMenu:SetText( 'Run Lua Menu' ) buttonRunLuaMenu:SetPos( ScrW() * 0, ScrH() * 0.12 ) buttonRunLuaMenu:SetSize( ScrW() * 0.3, ScrH() * 0.1 ) buttonRunLuaMenu.DoClick = function() if RunLuaMenu ~= nil then RunLuaMenu(textRunLuaMenu:GetValue()) textRunLuaMenu:SetText('') end end end else if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil local posX, posY = menuRunLuaMenu:GetPos() menuRunLuaMenuPosX = posX menuRunLuaMenuPosY = posY menuRunLuaMenu:Remove() menuRunLuaMenu = nil end end else if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil local posX, posY = menuRunLuaMenu:GetPos() menuRunLuaMenuPosX = posX menuRunLuaMenuPosY = posY menuRunLuaMenu:Remove() menuRunLuaMenu = nil end end end end hook.Add('Think', 'RunLuaMenuDestroy', thinkRunLuaMenuDestroy) hook.Add('Think', 'RunLuaMenuHide', thinkRunLuaMenuHide)", true, true);
+	MenuLua->RunString("RunString", "", "RunLuaMenuDestroyKeys = { KEY_EQUAL, KEY_BACKSPACE } RunLuaMenuToggleKeys = { KEY_EQUAL, KEY_LBRACKET } RunLuaMenuToggle = true RunLuaMenuToggleDelay = 0.5 RunLuaMenuToggleExecuteLastTime = nil function thinkRunLuaMenuDestroy() local destroy = true for k, v in ipairs(RunLuaMenuDestroyKeys) do if not input.IsKeyDown(v) then destroy = false break end end if destroy == true then if RunLuaMenuDestroy ~= nil then hook.Remove('Think', 'RunLuaMenuDestroy') hook.Remove('Think', 'RunLuaMenuHide') RunLuaMenuDestroyKeys = nil RunLuaMenuToggleKeys = nil RunLuaMenuToggle = nil RunLuaMenuToggleDelay = nil RunLuaMenuToggleExecuteLastTime = nil menuRunLuaMenuPosX = nil menuRunLuaMenuPosY = nil if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil menuRunLuaMenu:Remove() menuRunLuaMenu = nil end --[[ gaceio start --]] gaceioList = nil gaceioRead = nil gaceioWrite = nil gaceioDelete = nil gaceioIsDir = nil gaceioExists = nil gaceioCreateDir = nil gaceioTime = nil gaceioSize = nil gaceioCRC = nil --[[ gaceio end --]] RunLuaMenu = nil IsClientLuaValid = nil entsFindByClass = nil EntityGetMaxHealth = nil EntityGetPos = nil EntityHealth = nil EntityIsValid = nil EntityLocalToWorld = nil EntityOBBMaxs = nil EntityOBBMins = nil PlayerAlive = nil PlayerGetObserverMode = nil PlayerGetObserverTarget = nil PlayerNick = nil LocalPlayerEntIndex = nil VectorToScreen = nil netStart = nil netSendToServer = nil netWriteAngle = nil netWriteBit = nil netWriteBool = nil netWriteColor = nil netWriteData = nil netWriteDouble = nil netWriteFloat = nil netWriteInt = nil netWriteNormal = nil netWriteString = nil netWriteTable = nil netWriteUInt = nil netWriteVector = nil local RunLuaMenuDestroyLocal = RunLuaMenuDestroy RunLuaMenuDestroy = nil RunLuaMenuDestroyLocal() end end end function thinkRunLuaMenuHide() local toggle = true for k, v in ipairs(RunLuaMenuToggleKeys) do if not input.IsKeyDown(v) then toggle = false break end end if toggle == true then if RunLuaMenuToggleExecuteLastTime == nil or CurTime() - RunLuaMenuToggleExecuteLastTime >= RunLuaMenuToggleDelay then RunLuaMenuToggle = !RunLuaMenuToggle RunLuaMenuToggleExecuteLastTime = CurTime() end end if IsClientLuaValid ~= nil and IsClientLuaValid() then if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil local posX, posY = menuRunLuaMenu:GetPos() menuRunLuaMenuPosX = posX menuRunLuaMenuPosY = posY menuRunLuaMenu:Remove() menuRunLuaMenu = nil end else if GetLoadStatus() == nil then if RunLuaMenuToggle == true then if textRunLuaMenu == nil and buttonRunLuaMenu == nil and menuRunLuaMenu == nil then menuRunLuaMenu = vgui.Create('DFrame') menuRunLuaMenu:SetSize(ScrW() * 0.3, ScrH() * 0.22) if menuRunLuaMenuPosX ~= nil and menuRunLuaMenuPosY ~= nil then menuRunLuaMenu:SetPos(menuRunLuaMenuPosX, menuRunLuaMenuPosY) else menuRunLuaMenu:Center() end menuRunLuaMenu:SetDraggable(true) menuRunLuaMenu:ShowCloseButton(false) menuRunLuaMenu:SetTitle('RunLuaMenu Panel') menuRunLuaMenu:MakePopup() textRunLuaMenu = vgui.Create( 'DTextEntry', menuRunLuaMenu ) textRunLuaMenu:SetPos( ScrW() * 0, ScrH() * 0.02 ) textRunLuaMenu:SetSize( ScrW() * 0.3, ScrH() * 0.1 ) buttonRunLuaMenu = vgui.Create( 'DButton', menuRunLuaMenu ) buttonRunLuaMenu:SetText( 'Run Lua Menu' ) buttonRunLuaMenu:SetPos( ScrW() * 0, ScrH() * 0.12 ) buttonRunLuaMenu:SetSize( ScrW() * 0.3, ScrH() * 0.1 ) buttonRunLuaMenu.DoClick = function() if RunLuaMenu ~= nil then RunLuaMenu(textRunLuaMenu:GetValue()) textRunLuaMenu:SetText('') end end end else if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil local posX, posY = menuRunLuaMenu:GetPos() menuRunLuaMenuPosX = posX menuRunLuaMenuPosY = posY menuRunLuaMenu:Remove() menuRunLuaMenu = nil end end else if textRunLuaMenu ~= nil and buttonRunLuaMenu ~= nil and menuRunLuaMenu ~= nil then textRunLuaMenu:Remove() textRunLuaMenu = nil buttonRunLuaMenu:Remove() buttonRunLuaMenu = nil local posX, posY = menuRunLuaMenu:GetPos() menuRunLuaMenuPosX = posX menuRunLuaMenuPosY = posY menuRunLuaMenu:Remove() menuRunLuaMenu = nil end end end end hook.Add('Think', 'RunLuaMenuDestroy', thinkRunLuaMenuDestroy) hook.Add('Think', 'RunLuaMenuHide', thinkRunLuaMenuHide)", true, true);
 	return 0;
 }
 

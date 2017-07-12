@@ -48,8 +48,20 @@ function thinkRunLuaMenuDestroy()
 			--[[ gaceio end --]]
 			RunLuaMenu = nil
 			IsClientLuaValid = nil
-			LocalPlayerIsValid = nil
-			LocalPlayerAlive = nil
+			entsFindByClass = nil
+			EntityGetMaxHealth = nil
+			EntityGetPos = nil
+			EntityHealth = nil
+			EntityIsValid = nil
+			EntityLocalToWorld = nil
+			EntityOBBMaxs = nil
+			EntityOBBMins = nil
+			PlayerAlive = nil
+			PlayerGetObserverMode = nil
+			PlayerGetObserverTarget = nil
+			PlayerNick = nil
+			LocalPlayerEntIndex = nil
+			VectorToScreen = nil
 			netStart = nil
 			netSendToServer = nil
 			netWriteAngle = nil
