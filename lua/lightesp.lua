@@ -1,7 +1,7 @@
 lightesp = {}
 
 lightesp.folder = ''
-lightesp.configFile = '
+lightesp.configFile = ''
 
 lightesp.config = {}
 
